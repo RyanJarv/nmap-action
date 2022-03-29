@@ -1778,6 +1778,17 @@ async function run() {
 
     const hostsFile = workspace + '/hosts.txt'
 
+    var files = fs.readdirSync(path);
+
+    console.log('List of workspace files: ')
+    try {
+        files.forEach((f) => {
+            console.log(workspace + '/' + f)
+        })
+    } catch (error) {
+        core.setFailed(error.message);
+    }
+
     try {
       if (fs.existsSync(hostsFile)) {
           var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL {hostsFile} ${nmapArgs}`);
@@ -1796,7 +1807,7 @@ async function run() {
 
     var files = fs.readdirSync(path);
 
-    console.log('List of output files (host path): ')
+    console.log('List of output files: ')
     files.forEach((f) => {
         console.log(path + '/' + f)
     })

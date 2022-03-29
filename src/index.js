@@ -63,6 +63,16 @@ async function run(nmapArgs, image, workspace, outputDir, outputFile) {
 }
 
 async function main() {
+  var files = fs.readdirSync('.');
+  console.log('cwd: ')
+  try {
+      files.forEach((f) => {
+          console.log('./' + f)
+      })
+  } catch (error) {
+      core.setFailed(error.message);
+  }
+
   try {
     const outputDir = core.getInput('outputDir');
     const outputFile = core.getInput('outputFile');

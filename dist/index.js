@@ -1658,13 +1658,12 @@ const util = __nccwpck_require__(669);
 
 const copyFile = util.promisify(fs.copyFile);
 
-function getFilename(outputFile){
-  const oFileA = outputFile.split('.');
-  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
-  return filename;
-}
-
-async function run(nmapArgs, image, workspace, outputDir, outputFile) {
+async function run(nmapArgs, image, workspace) {
+    const path = '/tmp/output'
+    
+    await exec.exec(`mkdir -p ${path}`);
+    await exec.exec(`docker pull ${image}`);
+    
     var files = fs.readdirSync(workspace);
     console.log('List of workspace files: ')
     try {
@@ -1674,27 +1673,16 @@ async function run(nmapArgs, image, workspace, outputDir, outputFile) {
     } catch (error) {
         core.setFailed(error.message);
     }
-
-    
-
-    const path = workspace + '/' + outputDir;
-
-
-    
-    await exec.exec(`mkdir -p ${path}`);
-    await exec.exec(`docker pull ${image}`);
-    
-    const filename = getFilename(outputFile);
     
     var nmap = ''
     try {
       if (fs.existsSync(workspace+'/hosts.txt')) {
           console.log("Found hosts.txt file.")
           await copyFile(workspace+'/hosts.txt', path+'/hosts.txt')
-          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL '/data/hosts.txt' ${nmapArgs}`);
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} scan -iL /data/hosts.txt ${nmapArgs}`);
       } else {
           console.log("Did not find hosts.txt file.")
-          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} scan ${nmapArgs}`);
       }
     } catch(err) {
       console.error(err)

@@ -19,7 +19,7 @@ inputs:
     default: false
   arguments:
     description: 'arguments passed to nmap'
-    default: false
+    default: '-sT -F -Pn scanme.nmap.org'
 runs:
   using: 'node12'
   main: 'dist/index.js'

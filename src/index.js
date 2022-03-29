@@ -30,7 +30,18 @@ async function run() {
     console.log(nmapArgs)
 
     console.log('Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + nmapArgs)
-    const nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
+
+    const hostsFile = workspace + '/hosts.txt'
+
+    try {
+      if (fs.existsSync(hostsFile)) {
+          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL {hostsFile} ${nmapArgs}`);
+      } else {
+          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
+      }
+    } catch(err) {
+      console.error(err)
+    }
 
     try {
       await exec.exec(nmap);

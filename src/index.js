@@ -10,7 +10,7 @@ async function run() {
     const outputDir = core.getInput('outputDir');
     const outputFile = core.getInput('outputFile');
 
-    const arguments = core.getInput('arguments');
+    const nmapArgs = core.getInput('nmapArgs');
 
     const path = workspace + '/' + outputDir;
 
@@ -20,7 +20,7 @@ async function run() {
     
     const filename = getFilename(outputFile);
     
-    console.log("Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + arguments)
+    console.log('Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + nmapArgs)
     const nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${arguments}`);
 
     try {

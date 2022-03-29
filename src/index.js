@@ -1,6 +1,5 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
-const parse = require('./parser');
 const fs = require("fs");
 
 function getFilename(outputFile){

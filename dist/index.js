@@ -1783,11 +1783,11 @@ async function run() {
       core.setFailed(error.message);
     }
 
-    var files = fs.readdirSync('./'+filename);
+    var files = fs.readdirSync(path);
 
     console.log('List of output files (host path): ')
     files.forEach((f) => {
-        console.log(path + '/' + filename + '/' + f)
+        console.log(path + '/' + f)
     })
   } catch (error) {
     core.setFailed(error.message);

@@ -1782,6 +1782,13 @@ async function run() {
     } catch (error) {
       core.setFailed(error.message);
     }
+
+    var files = fs.readdirSync('./'+filename);
+
+    console.log('List of output files (host path): ')
+    files.forEach((f) => {
+        console.log(path + '/' + filename + '/' + f)
+    })
   } catch (error) {
     core.setFailed(error.message);
   }

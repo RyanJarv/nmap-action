@@ -1756,6 +1756,16 @@ function getFilename(outputFile){
 async function run() {
   try {
     const workspace = process.env.GITHUB_WORKSPACE;
+    var files = fs.readdirSync(workspace);
+    console.log('List of workspace files: ')
+    try {
+        files.forEach((f) => {
+            console.log(workspace + '/' + f)
+        })
+    } catch (error) {
+        core.setFailed(error.message);
+    }
+
     const image = core.getInput('image');
     
     const outputDir = core.getInput('outputDir');
@@ -1778,16 +1788,6 @@ async function run() {
 
     const hostsFile = workspace + '/hosts.txt'
 
-    var files = fs.readdirSync(path);
-
-    console.log('List of workspace files: ')
-    try {
-        files.forEach((f) => {
-            console.log(workspace + '/' + f)
-        })
-    } catch (error) {
-        core.setFailed(error.message);
-    }
 
     try {
       if (fs.existsSync(hostsFile)) {

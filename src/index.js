@@ -1,6 +1,9 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const fs = require("fs");
+const util = require('util');
+
+const copyFile = util.promisify(fs.copyFile);
 
 function getFilename(outputFile){
   const oFileA = outputFile.split('.');
@@ -8,9 +11,7 @@ function getFilename(outputFile){
   return filename;
 }
 
-async function run() {
-  try {
-    const workspace = process.env.GITHUB_WORKSPACE;
+async function run(nmapArgs, image, workspace, outputDir, outputFile) {
     var files = fs.readdirSync(workspace);
     console.log('List of workspace files: ')
     try {
@@ -21,14 +22,10 @@ async function run() {
         core.setFailed(error.message);
     }
 
-    const image = core.getInput('image');
     
-    const outputDir = core.getInput('outputDir');
-    const outputFile = core.getInput('outputFile');
-
-    const nmapArgs = core.getInput('nmapArgs');
 
     const path = workspace + '/' + outputDir;
+
 
     
     await exec.exec(`mkdir -p ${path}`);
@@ -36,23 +33,18 @@ async function run() {
     
     const filename = getFilename(outputFile);
     
-    console.log('nmapArgs')
-    console.log(nmapArgs)
-
-    console.log('Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + nmapArgs)
-
-    const hostsFile = workspace + '/hosts.txt'
-
-
+    var nmap = ''
     try {
-      if (fs.existsSync(hostsFile)) {
-          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL {hostsFile} ${nmapArgs}`);
+      if (fs.existsSync(workspace+'/hosts.txt')) {
+          await copyFile(workspace+'/hosts.txt', path+'/hosts.txt')
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL '/data/hosts.txt' ${nmapArgs}`);
       } else {
-          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
       }
     } catch(err) {
       console.error(err)
     }
+    console.log('Running: ' + nmap)
 
     try {
       await exec.exec(nmap);
@@ -60,15 +52,30 @@ async function run() {
       core.setFailed(error.message);
     }
 
-    var files = fs.readdirSync(path);
+    files = fs.readdirSync(path);
 
     console.log('List of output files: ')
     files.forEach((f) => {
         console.log(path + '/' + f)
     })
+}
+
+async function main() {
+  try {
+    const outputDir = core.getInput('outputDir');
+    const outputFile = core.getInput('outputFile');
+    const nmapArgs = core.getInput('nmapArgs');
+    const image = core.getInput('image');
+    const workspace = process.env.GITHUB_WORKSPACE;
+
+    
+    await run(nmapArgs, image, workspace, outputDir, outputFile)
+
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
-run();
+main();
+
+module.exports = run;

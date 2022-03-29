@@ -1648,6 +1648,94 @@ function copyFile(srcFile, destFile, force) {
 
 /***/ }),
 
+/***/ 351:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(186);
+const exec = __nccwpck_require__(514);
+const fs = __nccwpck_require__(747);
+const util = __nccwpck_require__(669);
+
+const copyFile = util.promisify(fs.copyFile);
+
+function getFilename(outputFile){
+  const oFileA = outputFile.split('.');
+  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
+  return filename;
+}
+
+async function run(nmapArgs, image, workspace, outputDir, outputFile) {
+    var files = fs.readdirSync(workspace);
+    console.log('List of workspace files: ')
+    try {
+        files.forEach((f) => {
+            console.log(workspace + '/' + f)
+        })
+    } catch (error) {
+        core.setFailed(error.message);
+    }
+
+    
+
+    const path = workspace + '/' + outputDir;
+
+
+    
+    await exec.exec(`mkdir -p ${path}`);
+    await exec.exec(`docker pull ${image}`);
+    
+    const filename = getFilename(outputFile);
+    
+    var nmap = ''
+    try {
+      if (fs.existsSync(workspace+'/hosts.txt')) {
+          await copyFile(workspace+'/hosts.txt', path+'/hosts.txt')
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL '/data/hosts.txt' ${nmapArgs}`);
+      } else {
+          nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
+      }
+    } catch(err) {
+      console.error(err)
+    }
+    console.log('Running: ' + nmap)
+
+    try {
+      await exec.exec(nmap);
+    } catch (error) {
+      core.setFailed(error.message);
+    }
+
+    files = fs.readdirSync(path);
+
+    console.log('List of output files: ')
+    files.forEach((f) => {
+        console.log(path + '/' + f)
+    })
+}
+
+async function main() {
+  try {
+    const outputDir = core.getInput('outputDir');
+    const outputFile = core.getInput('outputFile');
+    const nmapArgs = core.getInput('nmapArgs');
+    const image = core.getInput('image');
+    const workspace = process.env.GITHUB_WORKSPACE;
+
+    
+    await run(nmapArgs, image, workspace, outputDir, outputFile)
+
+  } catch (error) {
+    core.setFailed(error.message);
+  }
+}
+
+main();
+
+module.exports = run;
+
+
+/***/ }),
+
 /***/ 357:
 /***/ ((module) => {
 
@@ -1740,87 +1828,13 @@ module.exports = require("util");;
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-const core = __nccwpck_require__(186);
-const exec = __nccwpck_require__(514);
-const fs = __nccwpck_require__(747);
-
-function getFilename(outputFile){
-  const oFileA = outputFile.split('.');
-  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
-  return filename;
-}
-
-async function run() {
-  try {
-    const workspace = process.env.GITHUB_WORKSPACE;
-    var files = fs.readdirSync(workspace);
-    console.log('List of workspace files: ')
-    try {
-        files.forEach((f) => {
-            console.log(workspace + '/' + f)
-        })
-    } catch (error) {
-        core.setFailed(error.message);
-    }
-
-    const image = core.getInput('image');
-    
-    const outputDir = core.getInput('outputDir');
-    const outputFile = core.getInput('outputFile');
-
-    const nmapArgs = core.getInput('nmapArgs');
-
-    const path = workspace + '/' + outputDir;
-
-    
-    await exec.exec(`mkdir -p ${path}`);
-    await exec.exec(`docker pull ${image}`);
-    
-    const filename = getFilename(outputFile);
-    
-    console.log('nmapArgs')
-    console.log(nmapArgs)
-
-    console.log('Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + nmapArgs)
-
-    const hostsFile = workspace + '/hosts.txt'
-
-
-    try {
-      if (fs.existsSync(hostsFile)) {
-          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL {hostsFile} ${nmapArgs}`);
-      } else {
-          var nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
-      }
-    } catch(err) {
-      console.error(err)
-    }
-
-    try {
-      await exec.exec(nmap);
-    } catch (error) {
-      core.setFailed(error.message);
-    }
-
-    var files = fs.readdirSync(path);
-
-    console.log('List of output files: ')
-    files.forEach((f) => {
-        console.log(path + '/' + f)
-    })
-  } catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(351);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map

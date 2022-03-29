@@ -1771,6 +1771,9 @@ async function run() {
     
     const filename = getFilename(outputFile);
     
+    console.log('nmapArgs')
+    console.log(nmapArgs)
+
     console.log('Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + nmapArgs)
     const nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${arguments}`);
 

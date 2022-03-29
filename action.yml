@@ -14,7 +14,7 @@ inputs:
   outputFile:
     description: 'File name for scan reports'
     default: 'nmapvuln.json'
-  arguments:
+  nmapArgs:
     description: 'arguments passed to nmap'
     default: '-sT -F -Pn scanme.nmap.org'
 runs:

@@ -1747,6 +1747,12 @@ const core = __nccwpck_require__(186);
 const exec = __nccwpck_require__(514);
 const fs = __nccwpck_require__(747);
 
+function getFilename(outputFile){
+  const oFileA = outputFile.split('.');
+  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
+  return filename;
+}
+
 async function run() {
   try {
     const workspace = process.env.GITHUB_WORKSPACE;

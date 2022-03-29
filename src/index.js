@@ -2,6 +2,12 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const fs = require("fs");
 
+function getFilename(outputFile){
+  const oFileA = outputFile.split('.');
+  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
+  return filename;
+}
+
 async function run() {
   try {
     const workspace = process.env.GITHUB_WORKSPACE;

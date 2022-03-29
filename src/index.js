@@ -2,29 +2,29 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const fs = require("fs");
 
-function getFilename(outputFile){
-  const oFileA = outputFile.split('.');
-  const filename = oFileA && oFileA.length == 2 ? oFileA[0] : 'nmapvuln';
-  return filename;
-}
-
 async function run() {
   try {
     const workspace = process.env.GITHUB_WORKSPACE;
     const image = core.getInput('image');
+    
     const outputDir = core.getInput('outputDir');
     const outputFile = core.getInput('outputFile');
+
     const arguments = core.getInput('arguments');
-    const raw = core.getInput('raw');
+
     const path = workspace + '/' + outputDir;
+
+    
     await exec.exec(`mkdir -p ${path}`);
-    await exec.exec(`docker pull ${image} -q`);
+    await exec.exec(`docker pull ${image}`);
+    
     const filename = getFilename(outputFile);
+    
+    console.log("Running: docker run --user 0:0 -v ' + path + ':/data --network="host" -t ' + image + ' ' + filename + ' ' + arguments)
     const nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${arguments}`);
+
     try {
       await exec.exec(nmap);
-      const data = await parse(path, `${filename}.xml`, raw == 'true', withVulnerabilities == 'true');
-      fs.writeFileSync(`${outputDir}/${outputFile}`, JSON.stringify(data));
     } catch (error) {
       core.setFailed(error.message);
     }

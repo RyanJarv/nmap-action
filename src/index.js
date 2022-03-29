@@ -36,9 +36,11 @@ async function run(nmapArgs, image, workspace, outputDir, outputFile) {
     var nmap = ''
     try {
       if (fs.existsSync(workspace+'/hosts.txt')) {
+          console.log("Found hosts.txt file.")
           await copyFile(workspace+'/hosts.txt', path+'/hosts.txt')
           nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} -iL '/data/hosts.txt' ${nmapArgs}`);
       } else {
+          console.log("Did not find hosts.txt file.")
           nmap = (`docker run --user 0:0 -v ${path}:/data --network="host" -t ${image} ${filename} ${nmapArgs}`);
       }
     } catch(err) {
